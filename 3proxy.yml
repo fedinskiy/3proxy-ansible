@@ -1,0 +1,39 @@
+---
+- hosts: all
+  gather_facts: no
+  vars:
+    proxy_version: 0.8.10
+    ansible_path: ~/ansible
+    task_path: "{{ansible_path}}/3proxy/"
+    source_path: "{{task_path}}source/"
+    compile_path: "{{task_path}}source/3proxy-{{proxy_version}}/"
+    archive_path: "{{source_path}}source.tgz"
+    download_url: "https://github.com/z3APA3A/3proxy/archive/{{proxy_version}}.tar.gz"
+  tasks:
+  - name: check that host is accessible
+    ping:
+  - name: create folder for ansible scripts
+    file:
+      path: "{{ansible_path}}"
+      state: directory
+  - name: create folder for task
+    file:
+      path: "{{task_path}}"
+      state: directory
+  - name: create source code folder
+    file:
+      path: "{{source_path}}"
+      state: directory
+  - name: download source code
+    get_url:
+      url: "{{download_url}}"
+      dest: "{{archive_path}}"
+  - name: unpack source code
+    unarchive:
+      remote_src: yes
+      src: "{{archive_path}}"
+      dest: "{{source_path}}"
+  - name: compile source code
+    make:
+      chdir: "{{compile_path}}"
+      file: Makefile.Linux #TODO сделать контексто-зависимым
