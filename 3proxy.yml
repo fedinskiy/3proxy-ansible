@@ -3,10 +3,11 @@
   gather_facts: no
   vars:
     proxy_version: 0.8.10
-    ansible_path: ~/ansible
-    task_path: "{{ansible_path}}/3proxy/"
+    ansible_path: ~/ansible/
+    task_path: "{{ansible_path}}3proxy/"
     source_path: "{{task_path}}source/"
-    compile_path: "{{task_path}}source/3proxy-{{proxy_version}}/"
+    app_path: "{{task_path}}bin/"
+    compile_path: "{{source_path}}3proxy-{{proxy_version}}/"
     archive_path: "{{source_path}}source.tgz"
     download_url: "https://github.com/z3APA3A/3proxy/archive/{{proxy_version}}.tar.gz"
   tasks:
@@ -15,6 +16,10 @@
   - name: create folder for ansible scripts
     file:
       path: "{{ansible_path}}"
+      state: directory
+  - name: create folder for executable
+    file:
+      path: "{{app_path}}"
       state: directory
   - name: create folder for task
     file:
@@ -37,3 +42,27 @@
     make:
       chdir: "{{compile_path}}"
       file: Makefile.Linux #TODO сделать контексто-зависимым
+  - name: copy executable to required place
+    copy:
+      dest: "{{app_path}}"
+      src: "{{compile_path}}/src/3proxy"
+      remote_src: yes
+  - name: create system group
+    group:
+      name: proxy3
+      system: yes
+    become: yes
+  - name: create system user
+    user:
+      name: proxy3
+      group: proxy3
+      create_home: no
+      system: yes
+    become: yes
+    register: userinfo
+  - debug: var=userinfo
+  - set_fact:
+      user_id: "{{userinfo.uid}}"
+      group_id: "{{userinfo.group}}"
+  - debug: var=user_id
+  - debug: var=group_id
