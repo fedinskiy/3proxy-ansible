@@ -1,0 +1,6 @@
+# example of vault file. Need to be encrypted with ansible-vault
+#using password file or with interactive password
+#
+#vault_host: %ip or url%
+#ansible_user: %name of the user%
+#ansible_become_pass: %user password for sudo%

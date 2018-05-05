@@ -1,5 +1,0 @@
-all:
- hosts:
-  %hostname%:
-   ansible_host: %ip or URL%
-   ansible_user: %username%

@@ -1,0 +1,6 @@
+all:
+ hosts:
+  server_for_proxy:
+   ansible_host: "{{vault_host}}"
+   ansible_user: "{{vault_user}}"
+   ansible_become_pass: "{{vault_password}}"
