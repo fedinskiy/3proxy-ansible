@@ -7,6 +7,7 @@
   vars:
     proxy_version: 0.8.10
     proxy_port: 49802
+    additional_proxy_port: 443
     ansible_path: "{{ansible_env.HOME}}/ansible/"
     task_path: "{{ansible_path}}3proxy/"
     source_path: "{{task_path}}source/"
@@ -129,8 +130,22 @@
       name: "{{service_name}}"
       state: restarted
     become: yes
-  - name: configure firewall(if any)
+  - name: configure firewall(if any) for main port
     ufw:
       rule: allow
       port: "{{proxy_port}}"
+    become: yes
+  - name: configure firewall(if any) for additional port
+    ufw:
+      rule: allow
+      port: "{{additional_proxy_port}}"
+    become: yes
+  - name: bind additional port to main
+    iptables:
+      table: nat
+      protocol: tcp
+      chain: PREROUTING
+      destination_port: "{{additional_proxy_port}}"
+      jump: REDIRECT
+      to_ports: "{{proxy_port}}"
     become: yes
