@@ -6,6 +6,7 @@
         filter: ansible_env
   vars:
     proxy_version: 0.8.10
+    proxy_port: 49801
     ansible_path: "{{ansible_env.HOME}}/ansible/"
     task_path: "{{ansible_path}}3proxy/"
     source_path: "{{task_path}}source/"

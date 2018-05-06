@@ -28,3 +28,9 @@ logformat "- +_L%t.%. %N.%p %E %U %C:%c %R:%r %O %I %h %T"
 #
 # Включаем авторизацию по логинам и паролям
 auth cache strong
+
+#Запускаем socks на порту 49801, без NTLM авторизации,
+# с обязательными логином/паролем, и с параметром
+# Resolve IPv4 addresses if IPv6 address is not resolvable
+
+socks -p{{proxy_port}} -n -u2 -64
