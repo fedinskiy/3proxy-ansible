@@ -6,17 +6,17 @@
         filter: ansible_env
   vars:
     proxy_version: 0.8.10
-    proxy_port: 49801
+    proxy_port: 49802
     ansible_path: "{{ansible_env.HOME}}/ansible/"
     task_path: "{{ansible_path}}3proxy/"
     source_path: "{{task_path}}source/"
 
-    app_path: "{{task_path}}bin/"
+    app_path: /usr/bin/
     app_file: "{{app_path}}3proxy"
-    config_path: "{{task_path}}config/"
-    init_file: "{{app_path}}3proxyinit"
+    config_path: /etc/3proxy/
+    init_file: "/etc/init.d/3proxyinit"
     config_file: "{{config_path}}3proxy.cfg"
-    log_path: "{{task_path}}log/"
+    log_path: /var/log/3proxy/
     users_file: "{{config_path}}.proxyauth"
     group: proxy3
     user: proxy3
@@ -91,27 +91,34 @@
       file: Makefile.Linux #TODO сделать контексто-зависимым
   - name: copy executable to required place
     copy:
-      dest: "{{app_path}}"
+      dest: "{{app_file}}"
       src: "{{compile_path}}/src/3proxy"
       remote_src: yes
-  - template:
+      owner: "{{user}}"
+      group: "{{group}}"
+      mode: "u=rwx,go=r"
+    become: yes
+  - name: copy config file
+    template:
       src: templates/3proxy.cfg.j2
       dest: "{{config_file}}"
       owner: "{{user}}"
       group: "{{group}}"
       mode: "u=rw,g=rw,o=rw"
     become: yes
-  - template:
+  - name: copy users file
+    template:
       src: templates/proxyauth.j2
       dest: "{{config_path}}.proxyauth"
       owner: "{{user}}"
       group: "{{group}}"
-      mode: "u=rw"
+      mode: "u=rw,go=---"
     become: yes
-  - template:
+  - name: create initia
+    template:
       src: templates/3proxyinit.j2
       dest: "{{init_file}}"
       owner: "{{user}}"
       group: "{{group}}"
-      mode: "u=rwx"
+      mode: "u=rwx,go=r"
     become: yes
