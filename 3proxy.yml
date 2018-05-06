@@ -56,6 +56,14 @@
       state: directory
       owner: "{{user}}"
       group: "{{group}}"
+    become: yes
+  - name: create log folder
+    file:
+      path: "{{log_path}}"
+      state: directory
+      owner: "{{user}}"
+      group: "{{group}}"
+    become: yes
   - name: create folder for task
     file:
       path: "{{task_path}}"

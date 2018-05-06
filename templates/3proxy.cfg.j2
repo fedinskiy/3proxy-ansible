@@ -23,7 +23,7 @@ users ${{users_file}}
 # укажите режим запуска как deamon
 daemon
 # путь к логам и формат лога, к имени лога будет добавляться дата создания
-log /var/log/3proxy/3proxy.log D
+log {{log_path}}3proxy.log D
 logformat "- +_L%t.%. %N.%p %E %U %C:%c %R:%r %O %I %h %T"
 #
 # Включаем авторизацию по логинам и паролям
