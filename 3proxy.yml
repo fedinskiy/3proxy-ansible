@@ -14,7 +14,8 @@
     app_path: /usr/bin/
     app_file: "{{app_path}}3proxy"
     config_path: /etc/3proxy/
-    init_file: "/etc/init.d/3proxyinit"
+    service_name: 3proxyinit
+    init_file: "/etc/init.d/{{service_name}}"
     config_file: "{{config_path}}3proxy.cfg"
     log_path: /var/log/3proxy/
     users_file: "{{config_path}}.proxyauth"
@@ -114,7 +115,7 @@
       group: "{{group}}"
       mode: "u=rw,go=---"
     become: yes
-  - name: create initia
+  - name: create initialize files
     template:
       src: templates/3proxyinit.j2
       dest: "{{init_file}}"
@@ -122,3 +123,24 @@
       group: "{{group}}"
       mode: "u=rwx,go=r"
     become: yes
+  - name: enable service
+    service:
+      enabled: yes
+      name: "{{service_name}}"
+      state: restarted
+    become: yes
+  - name: configure firewall(if any)
+    ufw:
+      rule: allow
+      port: "{{proxy_port}}"
+    become: yes
+  # - name: check, if proxy is working properly
+  #   wait_for:
+  #     host: https://github.com
+  #   environment:
+  #     http_proxy: "socks5://{{guest.username}}:{{guest.password}}@{{ansible_host}}:{{proxy_port}}"
+  # - name: check, if proxy is working properly
+  #   wait_for:
+  #     host: https://github.com
+  #   environment:
+  #     http_proxy: "socks5://{{user1.username}}:{{user2.password}}@{{ansible_host}}:{{proxy_port}}"
