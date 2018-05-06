@@ -1,18 +1,47 @@
 ---
 - hosts: all
   gather_facts: no
+  pre_tasks:
+    - setup:
+        filter: ansible_env
   vars:
     proxy_version: 0.8.10
-    ansible_path: ~/ansible/
+    ansible_path: "{{ansible_env.HOME}}/ansible/"
     task_path: "{{ansible_path}}3proxy/"
     source_path: "{{task_path}}source/"
+
     app_path: "{{task_path}}bin/"
+    config_path: "{{task_path}}config/"
+    log_path: "{{task_path}}log/"
+    users_file: "{{config_path}}.proxyauth"
+    group: proxy3
+    user: proxy3
+
     compile_path: "{{source_path}}3proxy-{{proxy_version}}/"
     archive_path: "{{source_path}}source.tgz"
     download_url: "https://github.com/z3APA3A/3proxy/archive/{{proxy_version}}.tar.gz"
   tasks:
   - name: check that host is accessible
     ping:
+  - name: create system group
+    group:
+      name: "{{group}}"
+      system: yes
+    become: yes
+  - name: create system user
+    user:
+      name: "{{user}}"
+      group: "{{group}}"
+      create_home: no
+      system: yes
+    become: yes
+    register: userinfo
+  - debug: var=userinfo
+  - set_fact:
+      user_id: "{{userinfo.uid}}"
+      group_id: "{{userinfo.group}}"
+  - debug: var=user_id
+  - debug: var=group_id
   - name: create folder for ansible scripts
     file:
       path: "{{ansible_path}}"
@@ -21,6 +50,12 @@
     file:
       path: "{{app_path}}"
       state: directory
+  - name: create configuration folder
+    file:
+      path: "{{config_path}}"
+      state: directory
+      owner: "{{user}}"
+      group: "{{group}}"
   - name: create folder for task
     file:
       path: "{{task_path}}"
@@ -47,22 +82,17 @@
       dest: "{{app_path}}"
       src: "{{compile_path}}/src/3proxy"
       remote_src: yes
-  - name: create system group
-    group:
-      name: proxy3
-      system: yes
+  - template:
+      src: templates/3proxy.cfg.j2
+      dest: "{{config_path}}3proxy.cfg"
+      owner: "{{user}}" #TODO root mb?
+      group: "{{group}}"
+      mode: "u=rw,g=rw,o=rw"
     become: yes
-  - name: create system user
-    user:
-      name: proxy3
-      group: proxy3
-      create_home: no
-      system: yes
+  - template:
+      src: templates/proxyauth.j2
+      dest: "{{config_path}}.proxyauth"
+      owner: "{{user}}" #TODO root mb?
+      group: "{{group}}"
+      mode: "u=rw"
     become: yes
-    register: userinfo
-  - debug: var=userinfo
-  - set_fact:
-      user_id: "{{userinfo.uid}}"
-      group_id: "{{userinfo.group}}"
-  - debug: var=user_id
-  - debug: var=group_id
