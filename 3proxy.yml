@@ -134,13 +134,3 @@
       rule: allow
       port: "{{proxy_port}}"
     become: yes
-  # - name: check, if proxy is working properly
-  #   wait_for:
-  #     host: https://github.com
-  #   environment:
-  #     http_proxy: "socks5://{{guest.username}}:{{guest.password}}@{{ansible_host}}:{{proxy_port}}"
-  # - name: check, if proxy is working properly
-  #   wait_for:
-  #     host: https://github.com
-  #   environment:
-  #     http_proxy: "socks5://{{user1.username}}:{{user2.password}}@{{ansible_host}}:{{proxy_port}}"
