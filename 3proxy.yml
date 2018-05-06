@@ -11,7 +11,10 @@
     source_path: "{{task_path}}source/"
 
     app_path: "{{task_path}}bin/"
+    app_file: "{{app_path}}3proxy"
     config_path: "{{task_path}}config/"
+    init_file: "{{app_path}}3proxyinit"
+    config_file: "{{config_path}}3proxy.cfg"
     log_path: "{{task_path}}log/"
     users_file: "{{config_path}}.proxyauth"
     group: proxy3
@@ -92,15 +95,22 @@
       remote_src: yes
   - template:
       src: templates/3proxy.cfg.j2
-      dest: "{{config_path}}3proxy.cfg"
-      owner: "{{user}}" #TODO root mb?
+      dest: "{{config_file}}"
+      owner: "{{user}}"
       group: "{{group}}"
       mode: "u=rw,g=rw,o=rw"
     become: yes
   - template:
       src: templates/proxyauth.j2
       dest: "{{config_path}}.proxyauth"
-      owner: "{{user}}" #TODO root mb?
+      owner: "{{user}}"
       group: "{{group}}"
       mode: "u=rw"
+    become: yes
+  - template:
+      src: templates/3proxyinit.j2
+      dest: "{{init_file}}"
+      owner: "{{user}}"
+      group: "{{group}}"
+      mode: "u=rwx"
     become: yes
