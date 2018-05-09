@@ -7,7 +7,7 @@
   vars:
     proxy_version: 0.8.10
     proxy_port: 49801
-    additional_proxy_port: 443
+    additional_proxy_port: 88
     ansible_path: "{{ansible_env.HOME}}/ansible/"
     task_path: "{{ansible_path}}3proxy/"
     source_path: "{{task_path}}source/"
