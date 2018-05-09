@@ -87,6 +87,7 @@
       remote_src: yes
       src: "{{archive_path}}"
       dest: "{{source_path}}"
+      creates: "{{compile_path}}"
   - name: compile source code
     make:
       chdir: "{{compile_path}}"
