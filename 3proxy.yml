@@ -102,7 +102,7 @@
     become: yes
   - name: copy config file
     template:
-      src: templates/3proxy.cfg.j2
+      src: templates/3proxy/3proxy.cfg.j2
       dest: "{{config_file}}"
       owner: "{{user}}"
       group: "{{group}}"
@@ -110,7 +110,7 @@
     become: yes
   - name: copy users file
     template:
-      src: templates/proxyauth.j2
+      src: templates/3proxy/proxyauth.j2
       dest: "{{config_path}}.proxyauth"
       owner: "{{user}}"
       group: "{{group}}"
@@ -118,7 +118,7 @@
     become: yes
   - name: create initialize files
     template:
-      src: templates/3proxyinit.j2
+      src: templates/3proxy/3proxyinit.j2
       dest: "{{init_file}}"
       owner: "{{user}}"
       group: "{{group}}"
