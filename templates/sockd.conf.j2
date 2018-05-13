@@ -1,0 +1,34 @@
+#create files and access to
+errorlog: stdout {{log_path}}sockd.errlog
+logoutput:{{log_path}}sockd.log
+#debug:2
+
+internal: {{ansible_host}} port={{proxy_port}}
+external: eth0
+
+#create user
+user.privileged: root
+user.notprivileged : {{user}}
+
+clientmethod: none
+socksmethod: username #authmethod
+
+client pass {
+	from: 0.0.0.0/0 to: 0.0.0.0/0
+	log: error
+	socksmethod: username
+}
+#generic pass statement - bind/outgoing traffic
+socks pass {
+        from: 0.0.0.0/0 to: 0.0.0.0/0
+        command: bind connect udpassociate
+        log: error connect disconnect # iooperation
+	socksmethod: username #authmethod
+}
+
+#generic pass statement for incoming connections/packets
+socks pass {
+        from: 0.0.0.0/0 to: 0.0.0.0/0
+        command: bindreply udpreply
+        log: error connect disconnect #iooperation
+}

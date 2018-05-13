@@ -1,0 +1,120 @@
+---
+- hosts: all
+  gather_facts: no
+  pre_tasks:
+    - setup:
+        filter: ansible_env
+  vars:
+    proxy_version: 1.4.2
+    proxy_port: 443
+    ansible_path: "{{ansible_env.HOME}}/ansible/"
+    task_path: "{{ansible_path}}dante/"
+    source_path: "{{task_path}}source/"
+
+    app_path: "/usr/local/"
+    config_path: "{{app_path}}config/"
+    config_file: "{{config_path}}sockd.conf"
+    pid_file: /var/run/sockd.pid
+    log_path: /var/log/dante/
+    user: dante
+
+    compile_path: "{{source_path}}dante-{{proxy_version}}/"
+    archive_path: "{{source_path}}source.tgz"
+    download_url: "http://www.inet.no/dante/files/dante-{{proxy_version}}.tar.gz"
+    hash: sha256:baa25750633a7f9f37467ee43afdf7a95c80274394eddd7dcd4e1542aa75caad
+  tasks:
+  - name: check that host is accessible
+    ping:
+  - name: create system user
+    user:
+      name: "{{user}}"
+      group: nogroup
+      create_home: no
+      system: yes
+    become: yes
+  - name: create folder for ansible scripts
+    file:
+      path: "{{ansible_path}}"
+      state: directory
+  - name: create folder for executable
+    file:
+      path: "{{app_path}}"
+      state: directory
+  - name: create configuration folder
+    file:
+      path: "{{config_path}}"
+      state: directory
+      owner: "{{user}}"
+    become: yes
+  - name: create log folder
+    file:
+      path: "{{log_path}}"
+      state: directory
+      owner: "{{user}}"
+    become: yes
+  - name: create folder for task
+    file:
+      path: "{{task_path}}"
+      state: directory
+  - name: create source code folder
+    file:
+      path: "{{source_path}}"
+      state: directory
+  - name: download source code
+    get_url:
+      url: "{{download_url}}"
+      dest: "{{archive_path}}"
+      checksum: "{{hash}}"
+  - name: unpack source code
+    unarchive:
+      remote_src: yes
+      src: "{{archive_path}}"
+      dest: "{{source_path}}"
+      creates: "{{compile_path}}"
+  - name: configure Makefile
+    command: "{{compile_path}}configure
+    --without-pam
+    --disable-clientdl
+    --disable-client
+    --prefix={{app_path}}
+    --with-sockd-conf={{config_file}}
+    --with-pidfile={{pid_file}}"
+    args:
+      chdir: "{{compile_path}}"
+  - name: compile source code
+    make:
+      chdir: "{{compile_path}}"
+      target: install
+    become: yes
+  - name: create config files
+    template:
+      src: templates/sockd.conf.j2
+      dest: "{{config_file}}"
+      owner: "{{user}}"
+      mode: "u=rwx,go=r"
+    become: yes
+  - name: create user which will log-in into proxy
+    user:
+      name: "{{dante_user.username}}"
+      password: "{{dante_user.password|password_hash('sha512')}}"
+      group: nogroup
+      create_home: no
+      system: yes
+    become: yes
+  - name: get server process id
+    command: "cat {{pid_file}}"
+    register: pid
+  - name: server process id
+    debug: var=pid
+  - name: stop server
+    command: "kill {{pid.stdout}}"
+    when: pid.stdout!=""
+    become: yes
+  - name: start server
+    command: "{{app_path}}/sbin/sockd -D"
+    become: yes
+  - name: configure firewall(if any) for main port
+    ufw:
+      rule: allow
+      port: "{{proxy_port}}"
+    become: yes
