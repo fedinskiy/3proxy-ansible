@@ -1,0 +1,3 @@
+#first_user:
+#  username: someusername
+#  password: some_would_be_transferred_in_the_open_password

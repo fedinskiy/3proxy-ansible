@@ -1,2 +1,4 @@
 *.retry
 **/vault
+group_vars/all/users
+group_vars/all/dante-users
