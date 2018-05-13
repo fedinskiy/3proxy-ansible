@@ -88,7 +88,7 @@
     become: yes
   - name: create config files
     template:
-      src: templates/sockd.conf.j2
+      src: templates/dante/sockd.conf.j2
       dest: "{{config_file}}"
       owner: "{{user}}"
       mode: "u=rwx,go=r"
